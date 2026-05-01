@@ -409,7 +409,7 @@ async function doFetch() {
       };
       // Dodaj ID magazynu jeśli podane (wymagane przez Verto)
       if (warehouseId) {
-        searchData.idWarehouse = {idWarehouse: warehouseId};
+        searchData.warehouseDocumentId = warehouseId;
       }
       // Dodaj daty
       if (from) searchData.documentDateFrom = from + 'T00:00:00';
