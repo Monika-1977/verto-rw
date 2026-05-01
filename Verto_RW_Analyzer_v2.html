@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0060)file:///C:/Users/msztu/Downloads/Verto_RW_Analyzer_v2_8.html -->
-<html lang="pl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verto RW Analyzer — Straty magazynowe</title>
 <style>
@@ -142,40 +142,43 @@
     <!-- WORKER URL -->
     <div class="worker-box">
       <label>🔗 URL Cloudflare Worker (proxy)</label>
-      <input type="text" id="cfgWorker" placeholder="https://verto-proxy.TWOJA-NAZWA.workers.dev" value="">
+      <input type="text" id="cfgWorker"
+        placeholder="https://verto-proxy.TWOJA-NAZWA.workers.dev"
+        value=""/>
     </div>
 
     <div class="cfg-grid">
       <div class="field">
         <label>Login operatora Verto</label>
-        <input type="text" id="cfgLogin" placeholder="login" value="msztuder">
+        <input type="text" id="cfgLogin" placeholder="login" value="msztuder"/>
       </div>
       <div class="field">
         <label>Hasło</label>
-        <input type="password" id="cfgPass" placeholder="hasło">
+        <input type="password" id="cfgPass" placeholder="hasło"/>
       </div>
       <div class="field">
         <label>URL Verto (tylko info)</label>
-        <input type="text" id="cfgUrl" value="https://verto-test.szkla.com" readonly="" style="opacity:.5;cursor:not-allowed">
+        <input type="text" id="cfgUrl" value="https://verto-test.szkla.com" readonly
+          style="opacity:.5;cursor:not-allowed"/>
       </div>
     </div>
 
     <div class="cfg-grid-2">
       <div class="field">
         <label>Data od</label>
-        <input type="date" id="dateFrom">
+        <input type="date" id="dateFrom"/>
       </div>
       <div class="field">
         <label>Data do</label>
-        <input type="date" id="dateTo">
+        <input type="date" id="dateTo"/>
       </div>
     </div>
 
     <div class="def-row">
       <div class="def-label">Definicje RW:</div>
-      <div id="defTags"><span class="tag sel" onclick="removeDef(100481)">RW def:100481 <span style="opacity:.6">✕</span></span></div>
+      <div id="defTags"></div>
       <div class="add-def-wrap">
-        <input type="number" id="newDefId" placeholder="ID def." min="1">
+        <input type="number" id="newDefId" placeholder="ID def." min="1"/>
         <button class="btn btn-ghost btn-sm" onclick="addDefTag()">+ Dodaj</button>
       </div>
     </div>
@@ -190,7 +193,7 @@
     </div>
 
     <div class="msg err" id="fetchErr"></div>
-    <div class="msg ok" id="fetchOk"></div>
+    <div class="msg ok"  id="fetchOk"></div>
 
     <div class="help" style="margin-top:14px;margin-bottom:0;">
       <strong>Jak to działa:</strong> Aplikacja wysyła zapytania przez Twój Cloudflare Worker (proxy), który przekazuje je do Verto i omija blokadę CORS.<br>
@@ -230,7 +233,7 @@
       <div class="panel">
         <div class="panel-hdr">
           <div class="panel-title">Top 8 dokumentów RW</div>
-          <span style="font-size:10px;color:var(--muted);font-family:&#39;DM Mono&#39;,monospace;">wg wartości</span>
+          <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;">wg wartości</span>
         </div>
         <div class="table-wrap">
           <table>
@@ -243,18 +246,18 @@
     <div class="full-panel">
       <div class="panel-hdr">
         <div class="panel-title">Wszystkie pozycje RW</div>
-        <span style="font-size:10px;color:var(--muted);font-family:&#39;DM Mono&#39;,monospace;" id="tableInfo"></span>
+        <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;" id="tableInfo"></span>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th onclick="sortBy(&#39;documentNumber&#39;)">Nr dokumentu</th>
-              <th onclick="sortBy(&#39;warehouseCode&#39;)">Magazyn</th>
-              <th onclick="sortBy(&#39;documentDate&#39;)">Data</th>
-              <th onclick="sortBy(&#39;idGood&#39;)">ID towaru</th>
-              <th onclick="sortBy(&#39;quantity&#39;)">Ilość</th>
-              <th onclick="sortBy(&#39;valueNet&#39;)">Wartość FIFO</th>
+              <th onclick="sortBy('documentNumber')">Nr dokumentu</th>
+              <th onclick="sortBy('warehouseCode')">Magazyn</th>
+              <th onclick="sortBy('documentDate')">Data</th>
+              <th onclick="sortBy('idGood')">ID towaru</th>
+              <th onclick="sortBy('quantity')">Ilość</th>
+              <th onclick="sortBy('valueNet')">Wartość FIFO</th>
               <th>Klucz wartości</th>
             </tr>
           </thead>
@@ -394,14 +397,33 @@ async function doFetch() {
       showProgress(15+Math.round((di/defIds.length)*25),
         `Pobieranie dokumentów (def. ID:${defId})...`,`${di+1} z ${defIds.length}`);
 
+      // Buduj obiekt wyszukiwania
+      const searchData = {
+        idDocumentDefinition: {idDocumentDefinition: defId}
+      };
+      // Dodaj daty tylko jeśli podane — różne formaty
+      if (from) {
+        searchData.documentDateFrom = from + 'T00:00:00';
+        searchData.dateFrom = from;
+      }
+      if (to) {
+        searchData.documentDateTo = to + 'T23:59:59';
+        searchData.dateTo = to;
+      }
+
       const res = await proxyPost('/whm/whmDocument/find', {
-        whmDocumentSearchData: {
-          idDocumentDefinition: {idDocumentDefinition: defId},
-          ...(from?{documentDateFrom:from+'T00:00:00'}:{}),
-          ...(to  ?{documentDateTo:  to  +'T23:59:59'}:{})
-        }
+        whmDocumentSearchData: searchData
       });
-      extractList(res,'whmDocumentData').forEach(d=>allDocs.push(normalizeDoc(d,defId)));
+
+      // Debug — pokaż odpowiedź w konsoli
+      console.log('Odpowiedź find:', JSON.stringify(res).slice(0, 500));
+
+      // Sprawdź różne struktury odpowiedzi
+      const rawList = res.whmDocumentDataList || res.whmDocumentData ||
+        res.data || res.items || res.result || [];
+      const list = Array.isArray(rawList) ? rawList : [rawList].filter(Boolean);
+      console.log('Znalezione dokumenty:', list.length);
+      list.forEach(d=>allDocs.push(normalizeDoc(d,defId)));
     }
 
     if (allDocs.length===0) throw new Error(
@@ -566,6 +588,5 @@ function setBusy(on){document.getElementById('btnFetch').disabled=on;document.ge
 function toggleConfig(){const card=document.getElementById('configCard');const isOpen=card.style.display!=='none';card.style.display=isOpen?'none':'block';document.getElementById('btnCollapse').textContent=isOpen?'Rozwiń ▼':'Zwiń ▲';}
 function resetAll(){document.getElementById('dashboard').style.display='none';document.getElementById('configCard').style.display='block';document.getElementById('btnCollapse').style.display='none';rawItems=[];filtered=[];detectedValueKey=null;document.getElementById('progressCard').classList.remove('show');}
 </script>
-
-
-</body></html>
+</body>
+</html>
