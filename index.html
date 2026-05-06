@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0060)file:///C:/Users/msztu/Downloads/Verto_RW_Analyzer_v2_2.html -->
+<!-- saved from url=(0060)file:///C:/Users/msztu/Downloads/Verto_RW_Analyzer_v2_3.html -->
 <html lang="pl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -125,7 +125,7 @@
     <div class="logo-icon">📦</div>
     <div>
       <div class="logo-name">Verto RW Analyzer</div>
-      <div class="logo-sub">Streamsoft Verto · Straty magazynowe · RW id:100481 · v7</div>
+      <div class="logo-sub">Streamsoft Verto · Straty magazynowe · RW id:100481 · v8</div>
     </div>
   </div>
   <div class="status-pill demo" id="statusPill">
@@ -404,7 +404,7 @@ async function doFetch() {
       // warehouseDocumentId jest wymagane przez Verto
       const searchData = {
         idDocumentDefinition: { idDocumentDefinition: defId },
-        warehouseDocumentId:  warehouseId
+        idWarehouse: { idWarehouse: warehouseId }
       };
       // Dodaj daty
       if (from) searchData.documentDateFrom = from + 'T00:00:00';
