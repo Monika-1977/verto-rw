@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0060)file:///C:/Users/msztu/Downloads/Verto_RW_Analyzer_v2_4.html -->
+<!-- saved from url=(0060)file:///C:/Users/msztu/Downloads/Verto_RW_Analyzer_v2_6.html -->
 <html lang="pl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -94,7 +94,7 @@
     <div class="logo-icon">📦</div>
     <div>
       <div class="logo-name">Verto RW Analyzer</div>
-      <div class="logo-sub">Streamsoft Verto · RW po ID dokumentu · v11</div>
+      <div class="logo-sub">Streamsoft Verto · RW po ID dokumentu · v13</div>
     </div>
   </div>
   <div class="pill demo" id="statusPill"><span class="dot"></span><span id="statusTxt">Niepołączono</span></div>
@@ -302,9 +302,23 @@ async function doFetch() {
 
       try {
         // Pobierz nagłówek dokumentu
-        const docRes = await apiPost('/whm/whmDocument/find', {
-          whmDocumentSearchData: { idWhmDocument: { idWhmDocument: docId } }
-        });
+        // Próbuj różnych formatów — Verto jest wybredne
+        let docRes = null;
+        const formats = [
+          { whmDocumentSearchData: { warehouseDocumentId: docId } },
+          { whmDocumentSearchData: { warehouseDocumentId: { idWhmDocument: docId } } },
+          { whmDocumentSearchData: { idWhmDocument: { idWhmDocument: docId } } },
+          { whmDocumentSearchData: { idWhmDocument: docId } },
+        ];
+        for (const fmt of formats) {
+          try {
+            const r = await apiPost('/whm/whmDocument/find', fmt);
+            console.log(`Format ${JSON.stringify(fmt).slice(0,60)}:`, JSON.stringify(r).slice(0,100));
+            if (r.requestResult?.success !== false) { docRes = r; break; }
+            if (!r.requestResult?.executionErrorList?.[0]?.errorMessage?.includes('required')) { docRes = r; break; }
+          } catch(e) { console.warn('Format error:', e.message); }
+        }
+        if (!docRes) docRes = await apiPost('/whm/whmDocument/find', formats[0]);
         console.log(`Dok ${docId}:`, JSON.stringify(docRes).slice(0,200));
 
         if (docRes.requestResult?.success === false) {
